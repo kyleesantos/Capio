@@ -1,6 +1,7 @@
 import unittest
 import argparse
 import sys
+import os
 from docx import Document
 from wordExporter import accessAPI, timeToString, writeToFile
 
@@ -66,13 +67,13 @@ class WordExporterTests(unittest.TestCase):
 
         # checks if the function successfully retrieves all valid transcripts
         for transcript in transcriptIDs:
-            contents = accessAPI(transcriptIDs, transcript, apiKey)
+            contents = accessAPI(transcript, apiKey)
             self.assertNotEqual(contents,None,
                                 msg='Failed to retrieve valid transcript')
 
         # checks if the function correctly returns None if no transcript match
         # is inputted
-        contents = accessAPI(transcriptIDs, "no match", apiKey)
+        contents = accessAPI("no match", apiKey)
         self.assertEqual(contents,None,msg='Not catching invalid transcript ID')
 
     def test_time_to_string(self):
@@ -96,7 +97,7 @@ class WordExporterTests(unittest.TestCase):
         # runs through all transcripts to check if
         for transcript in transcriptIDs:
             document = Document()
-            contents = accessAPI(transcriptIDs, transcript, apiKey)
+            contents = accessAPI(transcript, apiKey)
             writeToFile(contents, document)
             counter = 0
             for para in document.paragraphs:
@@ -117,4 +118,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     sys.argv[1:] = args.unittest_args
-    unittest.main()
+
+    apiKey = os.environ.get('API_KEY')
+    if (apiKey == None):
+        print('Please set the environment variable API_KEY to access the API.')
+    else:
+        unittest.main()
