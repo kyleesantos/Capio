@@ -53,27 +53,31 @@ def writeToFile(contents, document):
         paragraph += timestamp + '\t' + words + '\n'
     document.add_paragraph(paragraph)
 
-# function takes in a transcript ID, file_path, and API key so the key is not
-# committed in a public repository.
+# function takes in a transcript ID and file_path and uses helper functions to
+# access the Capio API and write the results of the ID's transcription to the
+# inputted file.
 def main():
     parser = argparse.ArgumentParser(description='Read transcript and docx')
     parser.add_argument('-id', '--transcriptionid', help='input transcript ID')
     parser.add_argument('-o', '--output', help='file name to write to')
     args = parser.parse_args()
+
+    # check if both arguments were passed in. if not, give appropriate message
     if (args.transcriptionid == None):
         print('Please enter a transcription ID.')
         return
     else:
         transcriptID = args.transcriptionid
     if (args.output == None):
-        print('Please enter an output file')
+        print('Please enter an output file.')
         return
     else:
         out_file = args.output
+
     document = Document()
     transcripts = readIDs('transcriptIDs.txt')
     contents = accessAPI(transcripts, transcriptID, apiKey)
-    if (contents != None):
+    if (contents != None): # checks if error occurred when accessing the API
         writeToFile(contents, document)
         document.save(out_file)
 
