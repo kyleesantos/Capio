@@ -1,24 +1,13 @@
-import numpy as np
 import urllib2
 import json
 import time
 import argparse
+import os
 from docx import Document
-
-apiKey = < INSERT API KEY HERE >
-
-# reads in all transcript IDs and returns them in a list
-def readIDs(file_path):
-    transcriptsFile = open(file_path, 'r')
-    transcripts = transcriptsFile.read().splitlines()
-    return transcripts
 
 # function passes in a transcript and API key and accesses the Capio API
 # returns the status code and the json object returned
-def accessAPI(transcripts, transcript, apiKey):
-    if transcript not in transcripts:
-        print("Invalid transcript ID.")
-        return None
+def accessAPI(transcript, apiKey):
     url = 'https://api.capio.ai/v1/speech/transcript/' + transcript
     header = {'apiKey': apiKey} # uses the API key to access Capio API
     request = urllib2.Request(url,headers=header)
@@ -62,7 +51,7 @@ def main():
     parser.add_argument('-o', '--output', help='file name to write to')
     args = parser.parse_args()
 
-    # check if both arguments were passed in. if not, give appropriate message
+    # check if arguments were passed in. if not, give appropriate message
     if (args.transcriptionid == None):
         print('Please enter a transcription ID.')
         return
@@ -74,11 +63,13 @@ def main():
     else:
         out_file = args.output
 
+    apiKey = os.environ.get('API_KEY')
+    if (apiKey == None):
+        print('Please set the environment variable API_KEY to access the API.')
+        return
+
     document = Document()
-    transcripts = readIDs('transcriptIDs.txt')
-    contents = accessAPI(transcripts, transcriptID, apiKey)
+    contents = accessAPI(transcriptID, apiKey)
     if (contents != None): # checks if error occurred when accessing the API
         writeToFile(contents, document)
         document.save(out_file)
-
-main()

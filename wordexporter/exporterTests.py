@@ -2,9 +2,7 @@ import unittest
 import argparse
 import sys
 from docx import Document
-from wordExporter import readIDs, accessAPI, timeToString, writeToFile
-
-apiKey = < INSERT API KEY HERE >
+from wordExporter import accessAPI, timeToString, writeToFile
 
 # manually inputting list as to prevent dependencies in test cases
 transcriptIDs = ['593f237fbcae700012ba8fcd', '591a6212afb4c4000e152a5f',
@@ -61,14 +59,6 @@ transcriptIDs = ['593f237fbcae700012ba8fcd', '591a6212afb4c4000e152a5f',
 
 class WordExporterTests(unittest.TestCase):
     # tests for wordExporter.py
-
-    def test_read_IDs(self):
-        # ensures that the function correctly reads from "transcriptIDs.txt"
-        transcripts_test = readIDs('transcriptIDs.txt')
-
-        # checks if readIDs reads all transcripts from file
-        self.assertEqual(transcripts_test, transcriptIDs,
-                            msg='Incorrectly reading transcsripts')
 
     def test_accessAPI(self):
         # ensures that the function correctly accesses the Capio API or returns
