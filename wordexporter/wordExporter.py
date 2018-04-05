@@ -73,3 +73,5 @@ def main():
     if (contents != None): # checks if error occurred when accessing the API
         writeToFile(contents, document)
         document.save(out_file)
+
+main()
