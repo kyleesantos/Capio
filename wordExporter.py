@@ -5,7 +5,7 @@ import time
 import argparse
 from docx import Document
 
-# apiKey = < insert API key here >
+apiKey = < INSERT API KEY HERE >
 
 # reads in all transcript IDs and returns them in a list
 def readIDs(file_path):
