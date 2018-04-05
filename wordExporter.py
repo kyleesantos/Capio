@@ -16,7 +16,7 @@ def readIDs(file_path):
 # function passes in a transcript and API key and accesses the Capio API
 # returns the status code and the json object returned
 def accessAPI(transcripts, transcript, apiKey):
-    if (transcript not in transcripts):
+    if transcript not in transcripts:
         print("Invalid transcript ID.")
         return None
     url = 'https://api.capio.ai/v1/speech/transcript/' + transcript
