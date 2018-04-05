@@ -1,43 +1,36 @@
-from sys import argv
 import numpy as np
 import urllib2
 import json
 import time
+import argparse
 from docx import Document
 
-error_codes = { 301: 'Moved Permanently', 302: 'Found',
-                304: 'Not Modified', 400: 'Bad Request',
-                401: 'Unauthorized', 403: 'Unauthorized',
-                404: 'Not Found', 405: 'Method Not Allowed',
-                410: 'Gone', 415: 'Unsupported Media Type',
-                422: 'Unprocessable Entity', 429: 'Too Many Requests',
-                500: 'Internal Service Error' }
+# apiKey = < insert API key here >
 
+# reads in all transcript IDs and returns them in a list
 def readIDs(file_path):
     transcriptsFile = open(file_path, 'r')
     transcripts = transcriptsFile.read().splitlines()
-    return set(transcripts) # converting to set makes lookup time faster
-
-# checks the dictionary of errors and prints the appropriate error message
-def handleErrors(status_code):
-    if (status_code in error_codes):
-        print(error_codes[status_code])
-        return False
-    return True
+    return transcripts
 
 # function passes in a transcript and API key and accesses the Capio API
 # returns the status code and the json object returned
-def accessAPI(transcript, apiKey):
+def accessAPI(transcripts, transcript, apiKey):
+    if (transcript not in transcripts):
+        print("Invalid transcript ID.")
+        return None
     url = 'https://api.capio.ai/v1/speech/transcript/' + transcript
     header = {'apiKey': apiKey} # uses the API key to access Capio API
-    request = urllib2.Request(url,None,header)
-    response = urllib2.urlopen(request)
-    status_code = response.getcode()
-    if (handleErrors(status_code)):
+    request = urllib2.Request(url,headers=header)
+    try:
+        # tries to access Capio API
+        response = urllib2.urlopen(request)
         contents = response.read()
-        return (contents, status_code)
-    else:
-        return ([],0)
+        return contents
+    except urllib2.HTTPError, e:
+        # exception is handled by printing error and return None
+        print(e)
+        return None
 
 # converts seconds of type float to a string with format HH:mm:ss.ss
 def timeToString(seconds):
@@ -47,6 +40,8 @@ def timeToString(seconds):
     timestamp += milliseconds
     return timestamp
 
+# inputs the contents of the json and writes the timestamp and transcript in
+# the inputted docx document
 def writeToFile(contents, document):
     paragraph = ''
     readable = json.loads(contents)
@@ -61,17 +56,25 @@ def writeToFile(contents, document):
 # function takes in a transcript ID, file_path, and API key so the key is not
 # committed in a public repository.
 def main():
-    transcriptID = argv[1]
-    out_file = argv[2]
-    api_key = argv[3]
+    parser = argparse.ArgumentParser(description='Read transcript and docx')
+    parser.add_argument('-id', '--transcriptionid', help='input transcript ID')
+    parser.add_argument('-o', '--output', help='file name to write to')
+    args = parser.parse_args()
+    if (args.transcriptionid == None):
+        print('Please enter a transcription ID.')
+        return
+    else:
+        transcriptID = args.transcriptionid
+    if (args.output == None):
+        print('Please enter an output file')
+        return
+    else:
+        out_file = args.output
     document = Document()
     transcripts = readIDs('transcriptIDs.txt')
-    if (transcriptID in transcripts):
-        (contents, status_code) = accessAPI(transcriptID, api_key)
-        if (status_code != 0):
-            writeToFile(contents, document)
-    else:
-        print("Invalid transcript ID.")
-    document.save(out_file)
+    contents = accessAPI(transcripts, transcriptID, apiKey)
+    if (contents != None):
+        writeToFile(contents, document)
+        document.save(out_file)
 
 main()
